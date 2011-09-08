@@ -1,7 +1,12 @@
 package ws.roos.upcdvr;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,10 +21,14 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+/**
+ * Log in op tvgids.upc.nl and neem dingen op.
+ */
 public class Main {
 	
-	private String username = "ditisnietmijnusername";
-	private String password = "ditisnietmijnwachtwoord";
+	private String username;
+	private String password;
+	
 	private boolean debug = false;
 	
 	private String zoeken = "Nieuwsuur";
@@ -30,6 +39,9 @@ public class Main {
 	}
 	
 	private void main() throws IOException {
+		
+		initUserAndPass();
+		
 		HttpClient client = new HttpClient();
 		
 		// GetMethod gm = new GetMethod("https://tvgids.upc.nl/customerApi/api/User/session");
@@ -75,6 +87,24 @@ public class Main {
 				
 				sleep(1000);
 			}
+		}
+	}
+
+	private void initUserAndPass() throws IOException {
+		File f = new File(System.getProperty("user.home") + File.separator + ".upc.properties");
+		if (! f.exists()) {
+			throw new FileNotFoundException("File " + f + " does not exist");
+		}
+		InputStream is = new FileInputStream(f);
+		Properties p = new Properties();
+		p.load(is);
+		is.close();
+		
+		username = p.getProperty("username");
+		password = p.getProperty("password");
+		if (username == null || password == null) {
+			throw new IllegalStateException(
+					"Property 'username' and 'password' are required in " + f);
 		}
 	}
 
